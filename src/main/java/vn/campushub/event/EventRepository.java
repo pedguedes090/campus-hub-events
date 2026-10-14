@@ -16,9 +16,9 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
     @Query("""
             select event from Event event
             where event.startsAt >= :now
-              and (:query is null or lower(event.title) like concat('%', lower(:query), '%')
+              and (:query = '' or lower(event.title) like concat('%', lower(:query), '%')
                    or lower(event.description) like concat('%', lower(:query), '%'))
-              and (:category is null or lower(event.category) = lower(:category))
+              and (:category = '' or lower(event.category) = lower(:category))
             order by event.startsAt asc
             """)
     List<Event> searchUpcoming(@Param("now") OffsetDateTime now,

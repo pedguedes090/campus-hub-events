@@ -23,6 +23,7 @@ dependencies {
     testImplementation 'org.testcontainers:postgresql'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.flywaydb:flyway-core'
@@ -52,7 +53,9 @@ tasks.register('buildFrontend', Exec) {
 }
 
 tasks.named('processResources') {
-    dependsOn tasks.named('buildFrontend')
+    if (!project.hasProperty('skipFrontendBuild')) {
+        dependsOn tasks.named('buildFrontend')
+    }
     from('frontend/dist') {
         into 'static'
     }
