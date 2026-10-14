@@ -16,12 +16,19 @@ Repository: [github.com/pedguedes090/campus-hub-events](https://github.com/pedgu
 
 ```text
 Browser
-  └── Spring Boot (REST API + React static assets, port 8080)
+  └── Spring Boot + React static assets (public port 80)
         └── private Docker network
-              └── PostgreSQL 17 + named volume campus_hub_data
+              └── PostgreSQL 17 + named volume campus_hub_production_data
 ```
 
-Frontend React/TypeScript/Vite được build vào executable Spring Boot JAR. PostgreSQL là nguồn dữ liệu chính, schema được quản lý bằng Flyway. Chỉ cổng ứng dụng được publish; PostgreSQL không có port host. Image chạy bằng user không phải root và có readiness health check.
+Frontend React/TypeScript/Vite được build vào executable Spring Boot JAR. PostgreSQL là nguồn dữ liệu chính, schema được quản lý bằng Flyway. Cổng 80 phục vụ cả giao diện React và các API `/api/...`. PostgreSQL chạy trên network riêng và không mở cổng ra host. Image container chạy bằng user không phải root, filesystem read-only và có readiness health check.
+
+## Triển khai công khai (Production VPS)
+
+- **URL ứng dụng trực tiếp:** [http://4.230.8.209/](http://4.230.8.209/)
+- **Tình trạng:** Đã triển khai và nghiệm thu hoạt động thực tế qua Internet.
+- **Cấu hình:** Chạy qua Docker Compose trên máy chủ Azure Ubuntu 24.04 LTS (`deploy/compose.production.yaml`). Dữ liệu sự kiện và đăng ký được lưu trữ bền vững tại named volume `campus_hub_production_data`.
+- **Bảo mật mạng:** Azure NSG mở TCP 80 (HTTP) và TCP 22 (SSH). PostgreSQL không mở cổng ra bên ngoài. Các thao tác cấu hình Nginx reverse proxy và TLS (HTTPS) có sẵn tài liệu và file mẫu trong thư mục `deploy/` cho giai đoạn gắn tên miền chính thức.
 
 ## Chạy local bằng Docker Compose
 
