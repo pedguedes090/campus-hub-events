@@ -1,0 +1,42 @@
+name: Deploy Campus Hub to VPS
+
+on:
+  workflow_run:
+    workflows: [Publish Campus Hub image]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'workflow_run' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install restricted SSH identity and pinned host key
+        shell: bash
+        run: |
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/campus-hub-deploy"
+          chmod 600 "$HOME/.ssh/campus-hub-deploy"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+      - name: Deploy immutable image
+        shell: bash
+        run: >-
+          ssh -T -i "$HOME/.ssh/campus-hub-deploy"
+          -o IdentitiesOnly=yes
+          -o StrictHostKeyChecking=yes
+          "$SSH_USER@$SSH_HOST"
+          "deploy $DEPLOY_SHA"
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha }}
