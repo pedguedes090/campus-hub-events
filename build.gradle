@@ -19,6 +19,8 @@ repositories {
 dependencies {
     implementation platform('org.springframework.boot:spring-boot-dependencies:3.5.16')
     testImplementation platform('org.springframework.boot:spring-boot-dependencies:3.5.16')
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
